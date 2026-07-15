@@ -1,45 +1,45 @@
 # GitHub Ready
 
-GitHub Ready 是一个仅驻留在 macOS 菜单栏的本地 SwiftUI 工具，用于检查 GitHub CLI、Git、HTTPS 和 GitHub SSH-over-443 是否就绪。它不会在每次登录 macOS 时重新执行登录或修复：应用启动时只做静默、只读检查。
+GitHub Ready is a local SwiftUI macOS utility with a regular desktop window and a native status-bar popover. It checks whether GitHub CLI, Git, HTTPS, and GitHub SSH-over-443 are ready. Startup performs only a silent, read-only check; it does not automatically log in or repair configuration.
 
-## 主要功能
+## Features
 
-- 绿色、蓝色、黄色、橙色、红色和灰色状态分类。
-- 显示活动 GitHub 账户、由 `gh config get` 读取的首选协议、Git/`gh` 版本及双协议状态。
-- 区分 DNS、TLS、网络/VPN、超时与明确的凭据拒绝。
-- 检查 `ssh -G github.com` 的有效路由、`ssh-add -l` 的 agent 高层状态，并用严格 host-key 检查验证 GitHub SSH。
-- 手动 `Check Again` 和活动协议感知的只读 `Test Connection`。
-- 仅经用户点击和确认，在 HTTPS 与 SSH 间切换 GitHub CLI 的未来 clone/push 首选协议。
-- 提供协议专用修复：HTTPS helper 修复；SSH 仅在必要时尝试用系统 `ssh-add` 重新加载 `id_ed25519`。
-- 仅在用户点击并确认后启动 GitHub 浏览器登录。
-- 隐私安全的有限本地日志与可复制诊断。
-- 使用 `SMAppService.mainApp` 管理 Launch at Login；开发 bundle 中禁用该开关。
+- Green, blue, yellow, orange, red, and gray health states.
+- Active GitHub account, the preferred protocol from `gh config get`, Git/`gh` versions, and both protocol states.
+- Separate classification for DNS, TLS, network/VPN, timeout, and explicit credential rejection.
+- Effective `ssh -G github.com` routing, high-level `ssh-add -l` agent state, and GitHub SSH validation with strict host-key checking.
+- Manual `Check Again` and a read-only `Test Connection` for the active protocol.
+- User-confirmed switching of GitHub CLI's future clone/push preference between HTTPS and SSH.
+- Protocol-specific repair: HTTPS helper repair; SSH only attempts to reload `id_ed25519` with the system `ssh-add` when necessary.
+- Browser login starts only after an explicit user confirmation.
+- Privacy-conscious local logs and copyable diagnostics.
+- `SMAppService.mainApp` support for Launch at Login; development bundles keep this toggle disabled.
 
-现有仓库 remote 与 GitHub CLI 首选协议是不同概念。协议切换不会改写任何现有 remote；本版本不提供账户切换、remote 迁移或 GitHub Enterprise 修复。
+The repository remote and GitHub CLI's preferred protocol are separate concepts. Switching the protocol does not rewrite existing remotes. This version does not provide account switching, remote migration, or GitHub Enterprise repair.
 
-## 系统要求
+## Requirements
 
-- macOS 13 或更高版本。
-- Swift 6 工具链。
-- GitHub CLI 和 Git 建议通过 Homebrew 安装。
-- 不需要管理员权限。
+- macOS 13 or later.
+- Swift 6 toolchain.
+- GitHub CLI and Git; Homebrew installation is recommended.
+- No administrator privileges are required.
 
-## 构建
+## Build
 
 ```bash
-cd ~/Projects/AI/Git_connection
+cd Git_connection
 ./script/build_and_run.sh build
 ```
 
-输出：
+Output:
 
 ```text
 dist/GitHub Ready.app
 ```
 
-构建脚本会生成 `Info.plist`、执行 `plutil -lint` 并对开发 bundle 应用本地 ad-hoc 签名。
+The build script generates `Info.plist`, runs `plutil -lint`, and applies a local ad-hoc signature to the development bundle.
 
-## 测试与验证
+## Tests and verification
 
 ```bash
 /usr/bin/xcrun swift test
@@ -47,72 +47,72 @@ dist/GitHub Ready.app
 ./script/build_and_run.sh verify
 ```
 
-当前机器的 Command Line Tools 不完整地暴露了 XCTest/Swift Testing 运行时，因此 `Tests/GitHubReadyTests` 包含一个无第三方依赖的自包含测试 harness。它由 `swift test` 加载 test bundle 时执行，失败会使命令返回非零；命令输出会明确报告执行数量和失败数量。
+The test target includes a self-contained harness with no third-party dependencies. It is loaded by `swift test`, runs the complete suite during test-bundle initialization, returns a non-zero exit status on failure, and reports the number of executed and failed tests.
 
-## 运行
+## Run
 
 ```bash
 ./script/build_and_run.sh run
 ```
 
-应用同时提供主窗口与原生菜单栏入口。双击 Finder、Desktop 或 Dock 图标会打开主窗口；点击顶部 GitHub Ready 状态图标会在图标正下方弹出状态与操作面板，点击其他位置自动收起。正常启动不会打开 Terminal、浏览器或运行修复命令。
+The app provides both a desktop window and a native status-bar entry. Double-clicking the Finder, Desktop, or Dock icon opens the main window. Clicking the GitHub Ready status icon opens the status/action popover below the icon; clicking outside it dismisses the popover. Normal startup does not open Terminal, a browser, or a repair command.
 
-## 本地 MVP 直接启动
+## Local MVP launcher
 
-完成稳定安装后，可以直接双击桌面上的：
+After stable installation, double-click this Desktop Alias:
 
 ```text
 ~/Desktop/GitHub Ready
 ```
 
-该入口是指向 `~/Applications/GitHub Ready.app` 的 macOS 原生 Alias，不会打开 Terminal，也不会复制第二份应用。它可像标准应用一样拖入 Dock；应用启动后，Dock 与顶部菜单栏都会显示 GitHub Ready 品牌图标。
+The Alias points to `~/Applications/GitHub Ready.app`, does not open Terminal, and does not create a second application copy. It can be dragged into the Dock like a normal application. When the app is running, the Dock and status bar show the GitHub Ready brand icon.
 
-菜单的主要操作区固定为每行三个等宽、等高的胶囊按钮，便于快速点击和扫描。
+The primary action area uses three equal-width, equal-height capsule buttons per row.
 
-## 后续安装
+## Stable installation
 
-本阶段不会自动安装。未来经过单独授权后，稳定位置为：
-
-```text
-~/Applications/GitHub Ready.app
-```
-
-只有从该路径运行时，Launch at Login 开关才可用。用户点击开关后，应用才调用 `SMAppService.mainApp.register()` 或 `unregister()`；启动过程只读取注册状态。
-
-## 禁用 Launch at Login
-
-从稳定安装位置启动应用，关闭菜单中的 `Launch at Login`。如果 macOS 显示需要审批，可在“系统设置 → 通用 → 登录项”中检查状态。
-
-## 卸载
-
-在确认 Launch at Login 已关闭后，退出应用并删除：
+This project does not install itself automatically. After separate authorization, the stable location is:
 
 ```text
 ~/Applications/GitHub Ready.app
 ```
 
-如需删除应用生成的日志，可删除：
+Launch at Login is available only when running from that location. The app calls `SMAppService.mainApp.register()` or `unregister()` only after the user changes the toggle; startup only reads the registration status.
+
+## Disable Launch at Login
+
+Start the app from the stable installation and turn off `Launch at Login`. If macOS requests approval, check System Settings → General → Login Items.
+
+## Uninstall
+
+After confirming that Launch at Login is disabled, quit the app and remove:
+
+```text
+~/Applications/GitHub Ready.app
+```
+
+To remove app-generated logs, remove:
 
 ```text
 ~/Library/Logs/GitHubReady/
 ```
 
-删除应用不会删除 GitHub CLI 登录、Git 配置或 macOS Keychain 凭据。
+Uninstalling the app does not remove GitHub CLI login state, Git configuration, or macOS Keychain credentials.
 
-## 已知限制
+## Known limitations
 
-- 仅支持 `github.com`，SSH Ready 路由要求 `ssh.github.com:443`、用户 `git` 和可用的 `id_ed25519`。
-- 切换只影响 GitHub CLI 未来工作流的首选协议，不迁移现有仓库 remote。
-- 不修复 GitHub Enterprise host。
-- 不修改 `~/.ssh/config`、`known_hosts`、SSH key 或 Keychain；无交互加载失败时需要用户在应用外处理 key。
-- 浏览器登录由 `gh auth login --web` 驱动；如果当前 GitHub CLI 版本要求终端式交互，应用会安全失败并显示脱敏错误，不会回退到 shell 或读取 PAT。
-- 开发 bundle 不能作为永久 Login Item。
-- 顶部状态项是固定的 GitHub Ready 品牌标记；具体健康状态在点击后打开的状态与操作面板中显示。
+- Only `github.com` is supported. SSH Ready requires `ssh.github.com:443`, user `git`, and an available `id_ed25519` key.
+- Switching affects GitHub CLI's future workflow preference only; it does not migrate existing repository remotes.
+- GitHub Enterprise hosts are not repaired.
+- The app does not modify `~/.ssh/config`, `known_hosts`, SSH keys, or Keychain. Non-interactive key-loading failures require action outside the app.
+- Browser login is driven by `gh auth login --web`. If the installed GitHub CLI requires terminal-style interaction, the app fails safely with a redacted error and does not fall back to a shell or read a PAT.
+- A development bundle cannot be used as a permanent Login Item.
+- The status bar uses a fixed GitHub Ready brand mark; detailed health state is shown in the status/action popover.
 
-## 品牌图标与状态动效
+## Brand icon and status animation
 
-项目内置用户提供的 `Sources/GitHubReady/Resources/GitHubReadyIcon.svg`。构建时会生成应用包使用的 `GitHubReadyIcon.icns`，因此 Finder、桌面启动链接和 `~/Applications` 中显示相同图标。
+The project includes the user-provided `Sources/GitHubReady/Resources/GitHubReadyIcon.svg`. The build creates `GitHubReadyIcon.icns`, so Finder, the Desktop Alias, and `~/Applications` show the same app icon.
 
-Finder 的 `.icns` 图标是静态资源。顶部状态项使用项目根目录中用户提供的 `GitHub-Ready-Icon-white.svg`：构建时转为应用包内的 `GitHubReadyStatusIcon.png`，以透明背景、白色分支和白色节点显示；它不使用黑色方形底或绿色。应用正在运行且状态为 Ready 时，主窗口顶部仍会为完整品牌图标的绿色节点显示柔和的呼吸灯动效。非 Ready 状态不会播放该动效。
+The Finder `.icns` icon is static. The status item uses the user-provided `GitHub-Ready-Icon-white.svg`, converted at build time to `GitHubReadyStatusIcon.png`; it has a transparent background with white branches and nodes, without a black square or green. When the main window is Ready, the complete brand icon's green node displays a soft breathing animation. The animation is not shown in non-Ready states.
 
-如果把应用固定到 Dock，Force Quit 后图标会保留、运行指示点会消失，这是 macOS 的标准行为；未固定时，Dock 中的运行图标和顶部状态项都会随进程退出而消失。
+If the app is pinned to the Dock, Force Quit leaves its icon in place but removes the running indicator; this is standard macOS behavior. When it is not pinned, the running Dock icon and status item disappear when the process exits.

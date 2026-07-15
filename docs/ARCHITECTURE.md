@@ -1,73 +1,73 @@
-# 架构
+# Architecture
 
-## 场景与状态所有权
+## Scenes and state ownership
 
-`GitHubReadyApp` 创建一个 `MenuBarExtra` 和一个按需打开的详情窗口。应用使用 accessory activation policy，`Info.plist` 同时设置 `LSUIElement=true`。`AppStore` 是 `@MainActor` 的单一 UI 状态所有者；`HealthCheckService` 是 actor，负责异步健康检查和用户明确触发的操作。
+`GitHubReadyApp` creates a regular `WindowGroup` for the main desktop window and an on-demand details window. `AppDelegate` uses the regular activation policy and bridges a native `NSStatusItem` to an `NSPopover` containing the SwiftUI status/action view. `AppStore` is the single `@MainActor` UI state owner; `HealthCheckService` is an actor responsible for asynchronous health checks and explicitly user-triggered operations.
 
-应用代理在 `applicationDidFinishLaunching` 中只调用 `AppStore.refresh()`。启动路径没有登录、repair、Git 写入、Keychain 写入或 Login Item 写入。
+During `applicationDidFinishLaunching`, the app delegate only starts `AppStore.refresh()`. Startup does not log in, repair, write Git configuration, write Keychain data, or register a Login Item.
 
-## 分层
+## Layers
 
-- `App/`：应用入口和启动生命周期。
-- `Views/`：菜单栏弹出面板、状态行和详情窗口。
-- `Models/`：命令结果、认证状态、协议、HTTPS helper、SSH route/agent/auth、菜单状态和操作结果。
-- `Stores/`：主线程 UI 状态和用户操作编排。
-- `Services/`：命令执行、认证解析、helper 解析、健康检查、日志、诊断和 Launch at Login。
-- `Support/`：网络错误分类、状态分类、脱敏和稳定路径策略。
+- `App/`: application entry point and launch lifecycle.
+- `Views/`: status-bar popover, status rows, main window, and details window.
+- `Models/`: command results, authentication, protocol, HTTPS helper, SSH route/agent/auth, menu state, and action results.
+- `Stores/`: main-thread UI state and orchestration of user actions.
+- `Services/`: command execution, authentication parsing, helper parsing, health checks, logging, diagnostics, and Launch at Login.
+- `Support/`: network error classification, status classification, redaction, and stable-path policy.
 
 ## CommandRunner
 
-所有外部命令都使用 `Process.executableURL`、绝对路径和分离参数数组。runner 要求 executable 位于 allowlist，使用有限环境变量，排除 `GH_TOKEN` 等凭据覆盖变量，并设置输出总上限与超时。超时后依次发送 terminate、interrupt，最后才使用 `SIGKILL`。stdout/stderr 在进入模型前经过脱敏。
+All external commands use `Process.executableURL`, absolute paths, and separated argument arrays. The runner requires the executable to be in an allowlist, uses a constrained environment, excludes credential override variables such as `GH_TOKEN`, and enforces output and timeout limits. On timeout it sends terminate, interrupt, and finally `SIGKILL` in sequence. stdout/stderr is redacted before it reaches the app state or diagnostics.
 
-## 认证解析
+## Authentication parsing
 
-主信号为：
+The primary signal is:
 
 ```text
 gh auth status --hostname github.com --json hosts
 ```
 
-解析器不使用 JSON 命令的 exit code 判断认证有效性，而是校验 `github.com`、账户数组、唯一 active 账户、`state`、`login` 与 `gitProtocol`。如果状态不明确，会补充运行非 JSON `gh auth status`，仅用其脱敏错误区分明确凭据拒绝与 DNS/TLS/网络/超时。
+The parser does not use the JSON command's exit code as the authentication decision. It validates `github.com`, the account array, the unique active account, `state`, `login`, and `gitProtocol`. If the state is ambiguous, it runs non-JSON `gh auth status` and uses only redacted errors to distinguish explicit credential rejection from DNS, TLS, network, or timeout failures.
 
-没有明确拒绝信号时，网络或不确定失败保持橙色，不会显示红色。
+When there is no explicit rejection signal, network or indeterminate failures remain orange rather than being shown as red.
 
-## HTTPS helper 解析
+## HTTPS helper parsing
 
-应用分别读取 system/global unscoped helper，以及 `github.com`、`gist.github.com` 的 global URL-scoped helper。解析器保留空行，因为空 helper 是 Git 配置的继承 reset。有效配置允许 system `osxkeychain` 与 GitHub-scoped `gh auth git-credential` 共存，并验证 helper 中的 `gh` 路径等于当前 allowlist 解析出的可执行路径。
+The app reads system/global unscoped helpers and the global URL-scoped helpers for `github.com` and `gist.github.com`. Empty lines are preserved because an empty helper resets inherited Git configuration. Valid configuration allows system `osxkeychain` to coexist with the GitHub-scoped `gh auth git-credential` helper and verifies that the helper's `gh` path matches the executable path resolved by the current allowlist.
 
-## 协议与 SSH 服务
+## Protocol and SSH services
 
-活动协议只以 `gh config get git_protocol --host github.com` 为准，不从仓库 remote 推断。`SSHStatusService` 使用 `/usr/bin/ssh -G github.com` 解析有效 host、port、user、identity、`IdentitiesOnly`、`AddKeysToAgent` 和可用时的 `UseKeychain`，再用 `/usr/bin/ssh-add -l` 取得不含 fingerprint 的 agent 高层状态。
+The active protocol comes only from `gh config get git_protocol --host github.com`; it is not inferred from repository remotes. `SSHStatusService` uses `/usr/bin/ssh -G github.com` to parse the effective host, port, user, identity, `IdentitiesOnly`, `AddKeysToAgent`, and available `UseKeychain` values, then uses `/usr/bin/ssh-add -l` for high-level agent state without exposing fingerprints.
 
-SSH 连接检查使用 `BatchMode=yes`、10 秒连接超时、一次尝试和 `StrictHostKeyChecking=yes`。`SSHConnectionParser` 识别 GitHub 成功文本；退出码 1 加成功文本是成功，不会把“does not provide shell access”误判为错误。已知账户存在时还会核对响应账户。
+SSH connection checks use `BatchMode=yes`, a 10-second connection timeout, one attempt, and `StrictHostKeyChecking=yes`. `SSHConnectionParser` recognizes GitHub's successful response; exit code 1 with the success text is treated as success, and “does not provide shell access” is not treated as an error. When a known account exists, the response account is also checked.
 
-## 状态模型
+## Status model
 
-- Green：活动 HTTPS 的认证/helper 正常，或活动 SSH 的 GitHub CLI 账户、443 route 和 GitHub SSH 认证均正常。
-- Blue：检查中。
-- Yellow：本地集成不完整，但认证没有确认失效。
-- Orange：网络、DNS、TLS、VPN 或认证暂时无法确认。
-- Red：无账户、无 active 账户或凭据明确被拒绝。
-- Gray：GitHub CLI 缺失。
+- Green: the active HTTPS authentication/helper is healthy, or the active SSH account, port-443 route, and GitHub SSH authentication are healthy.
+- Blue: a check is running.
+- Yellow: local integration is incomplete but authentication has not been confirmed invalid.
+- Orange: network, DNS, TLS, VPN, or authentication cannot currently be confirmed.
+- Red: no account, no active account, or explicit credential rejection.
+- Gray: GitHub CLI is missing.
 
-## 手动连接测试
+## Manual connection tests
 
-活动 HTTPS 的手动测试运行：
+The active HTTPS test runs:
 
 ```text
 gh api --method GET user --silent
 ```
 
-响应正文被抑制，只记录成功/失败、耗时和分类。
+The response body is suppressed; only success/failure, duration, and classification are recorded.
 
-活动 SSH 的手动测试运行固定的 `/usr/bin/ssh -T` 参数数组。常规健康检查也执行只读 SSH 验证，从而让非活动 SSH fallback 在详情页保持可见；非活动协议的失败不会降低主状态。
+The active SSH test uses a fixed `/usr/bin/ssh -T` argument array. Regular health checks also perform read-only SSH verification so that an inactive SSH fallback remains visible in Details; failure of an inactive protocol does not downgrade the primary state.
 
-## 协议切换与修复
+## Protocol switching and repair
 
-菜单根据活动协议显示 `Use SSH` 或 `Use HTTPS`。确认对话框明确说明只改变 GitHub CLI 的未来 clone/push 首选项，不改写现有 remote。确认后才通过绝对 `gh` 路径和分离参数执行 `gh config set`，完成后重跑完整健康检查。启动与自动验证均不进入该写路径。
+The menu displays `Use SSH` or `Use HTTPS` based on the active protocol. The confirmation dialog explains that the action changes only GitHub CLI's future clone/push preference and does not rewrite existing remotes. Only after confirmation does the app execute `gh config set` through the absolute `gh` path and separated arguments, then rerun the complete health check. Startup and automatic verification never enter this write path.
 
-SSH 修复会先重检 route 与认证；健康状态直接返回 `No SSH repair required`。只有用户确认、route 正确、认证失败且 agent 为空、预期 key 文件存在时，才尝试 `/usr/bin/ssh-add --apple-use-keychain`。它不改 SSH config、known_hosts 或 Keychain 内容。
+SSH repair rechecks the route and authentication first; a healthy state returns `No SSH repair required`. Only after user confirmation, with a correct route, failed authentication, an empty agent, and an existing expected key file, does the app attempt `/usr/bin/ssh-add --apple-use-keychain`. It does not modify SSH config, `known_hosts`, or Keychain contents.
 
 ## Launch at Login
 
-`LaunchAtLoginService` 映射 `SMAppService.mainApp.status`。稳定路径策略只允许 `~/Applications/GitHub Ready.app` 启用 toggle；`dist`、`.build` 和其他路径均禁用。register/unregister 仅从用户直接操作进入。
+`LaunchAtLoginService` maps `SMAppService.mainApp.status`. The stable-path policy allows the toggle only for `~/Applications/GitHub Ready.app`; `dist`, `.build`, and other paths disable it. Register/unregister can only be reached through a direct user action.
