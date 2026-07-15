@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="1024"
+  height="1024"
+  viewBox="0 0 1024 1024"
+  role="img"
+  aria-labelledby="title desc"
+>
+  <title id="title">GitHub Ready white logo</title>
+  <desc id="desc">
+    Transparent background logo for GitHub Ready. All strokes are white, with a right-side active node and pulse rings prepared for animation.
+  </desc>
+
+  <defs>
+    <linearGradient id="whiteStroke" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="45%" stop-color="#F7F8FA"/>
+      <stop offset="100%" stop-color="#EDEFF3"/>
+    </linearGradient>
+
+    <radialGradient id="whiteCore" cx="42%" cy="38%" r="70%">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="55%" stop-color="#FAFBFD"/>
+      <stop offset="100%" stop-color="#ECEFF4"/>
+    </radialGradient>
+
+    <radialGradient id="whiteHalo" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.95"/>
+      <stop offset="35%" stop-color="#FFFFFF" stop-opacity="0.42"/>
+      <stop offset="72%" stop-color="#FFFFFF" stop-opacity="0.14"/>
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0"/>
+    </radialGradient>
+
+    <filter id="softGlow" x="-160%" y="-160%" width="420%" height="420%">
+      <feGaussianBlur stdDeviation="10" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <filter id="mainGlow" x="-120%" y="-120%" width="340%" height="340%">
+      <feGaussianBlur stdDeviation="12" result="blur1"/>
+      <feColorMatrix
+        in="blur1"
+        type="matrix"
+        values="
+          0 0 0 0 1
+          0 0 0 0 1
+          0 0 0 0 1
+          0 0 0 0.85 0
+        "
+        result="whiteBlur"
+      />
+      <feMerge>
+        <feMergeNode in="whiteBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- pulse area for future animation -->
+  <g id="active-node-halo">
+    <circle
+      id="pulse-ring-3"
+      cx="680"
+      cy="588"
+      r="156"
+      fill="url(#whiteHalo)"
+      opacity="0.28"
+    />
+    <circle
+      id="pulse-ring-2"
+      cx="680"
+      cy="588"
+      r="116"
+      fill="none"
+      stroke="#FFFFFF"
+      stroke-width="7"
+      stroke-opacity="0.18"
+      filter="url(#softGlow)"
+    />
+    <circle
+      id="pulse-ring-1"
+      cx="680"
+      cy="588"
+      r="88"
+      fill="none"
+      stroke="#FFFFFF"
+      stroke-width="6"
+      stroke-opacity="0.28"
+      filter="url(#softGlow)"
+    />
+  </g>
+
+  <!-- main branch shape -->
+  <g id="branch-system" filter="url(#mainGlow)">
+    <path
+      id="branch-path"
+      d="M 352 322 L 352 670 M 352 322 L 545 322 Q 635 322 635 412 L 635 510"
+      fill="none"
+      stroke="url(#whiteStroke)"
+      stroke-width="34"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+
+    <circle
+      id="node-top-outer"
+      cx="352"
+      cy="322"
+      r="78"
+      fill="none"
+      stroke="url(#whiteStroke)"
+      stroke-width="30"
+    />
+
+    <circle
+      id="node-bottom-outer"
+      cx="352"
+      cy="670"
+      r="78"
+      fill="none"
+      stroke="url(#whiteStroke)"
+      stroke-width="30"
+    />
+  </g>
+
+  <!-- active node -->
+  <g id="active-node" filter="url(#mainGlow)">
+    <circle
+      id="active-node-outer"
+      cx="680"
+      cy="588"
+      r="92"
+      fill="none"
+      stroke="#FFFFFF"
+      stroke-width="12"
+    />
+    <circle
+      id="active-node-ring"
+      cx="680"
+      cy="588"
+      r="72"
+      fill="none"
+      stroke="#FFFFFF"
+      stroke-width="11"
+      stroke-opacity="0.96"
+    />
+    <circle
+      id="active-node-core"
+      cx="680"
+      cy="588"
+      r="59"
+      fill="url(#whiteCore)"
+    />
+    <circle
+      id="active-node-highlight"
+      cx="658"
+      cy="561"
+      r="20"
+      fill="#FFFFFF"
+      opacity="0.36"
+    />
+  </g>
+</svg>

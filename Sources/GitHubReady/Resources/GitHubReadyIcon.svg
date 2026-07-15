@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="1024"
+  height="1024"
+  viewBox="0 0 1024 1024"
+  role="img"
+  aria-labelledby="title desc"
+>
+  <title id="title">GitHub Ready app icon</title>
+  <desc id="desc">
+    Dark macOS-style rounded-square icon with a metallic branch graph and a luminous green active node.
+    Groups and IDs are structured for animation.
+  </desc>
+
+  <defs>
+    <linearGradient id="bgGradient" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#171a1d"/>
+      <stop offset="52%" stop-color="#090b0d"/>
+      <stop offset="100%" stop-color="#020303"/>
+    </linearGradient>
+
+    <linearGradient id="borderGradient" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#656b72"/>
+      <stop offset="18%" stop-color="#282d32"/>
+      <stop offset="78%" stop-color="#0b0d0f"/>
+      <stop offset="100%" stop-color="#32373d"/>
+    </linearGradient>
+
+    <linearGradient id="metalGradient" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f1f3f4"/>
+      <stop offset="28%" stop-color="#aeb4b9"/>
+      <stop offset="58%" stop-color="#6e747a"/>
+      <stop offset="78%" stop-color="#cfd3d6"/>
+      <stop offset="100%" stop-color="#7f858b"/>
+    </linearGradient>
+
+    <radialGradient id="greenCore" cx="50%" cy="44%" r="62%">
+      <stop offset="0%" stop-color="#baff9f"/>
+      <stop offset="34%" stop-color="#54f343"/>
+      <stop offset="68%" stop-color="#20c62e"/>
+      <stop offset="100%" stop-color="#087c19"/>
+    </radialGradient>
+
+    <radialGradient id="greenHalo" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#53ff62" stop-opacity="0.95"/>
+      <stop offset="36%" stop-color="#25e53d" stop-opacity="0.45"/>
+      <stop offset="72%" stop-color="#13b52e" stop-opacity="0.14"/>
+      <stop offset="100%" stop-color="#0c7a21" stop-opacity="0"/>
+    </radialGradient>
+
+    <filter id="outerShadow" x="-30%" y="-30%" width="160%" height="170%">
+      <feDropShadow dx="0" dy="26" stdDeviation="34" flood-color="#000000" flood-opacity="0.62"/>
+    </filter>
+
+    <filter id="metalShadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="10" stdDeviation="9" flood-color="#000000" flood-opacity="0.55"/>
+      <feDropShadow dx="0" dy="-2" stdDeviation="2" flood-color="#ffffff" flood-opacity="0.18"/>
+    </filter>
+
+    <filter id="greenGlow" x="-120%" y="-120%" width="340%" height="340%">
+      <feGaussianBlur stdDeviation="18" result="blur1"/>
+      <feColorMatrix
+        in="blur1"
+        type="matrix"
+        values="
+          0 0 0 0 0.10
+          0 0 0 0 1.00
+          0 0 0 0 0.25
+          0 0 0 0.95 0
+        "
+        result="greenBlur"
+      />
+      <feMerge>
+        <feMergeNode in="greenBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <filter id="ringGlow" x="-160%" y="-160%" width="420%" height="420%">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <clipPath id="iconClip">
+      <rect x="82" y="82" width="860" height="860" rx="176"/>
+    </clipPath>
+  </defs>
+
+  <g id="app-shell" filter="url(#outerShadow)">
+    <rect
+      id="app-background"
+      x="82"
+      y="82"
+      width="860"
+      height="860"
+      rx="176"
+      fill="url(#bgGradient)"
+      stroke="url(#borderGradient)"
+      stroke-width="20"
+    />
+    <rect
+      id="app-inner-highlight"
+      x="101"
+      y="101"
+      width="822"
+      height="822"
+      rx="157"
+      fill="none"
+      stroke="#ffffff"
+      stroke-opacity="0.08"
+      stroke-width="3"
+    />
+  </g>
+
+  <g id="icon-content" clip-path="url(#iconClip)">
+    <ellipse
+      id="background-vignette"
+      cx="512"
+      cy="512"
+      rx="340"
+      ry="310"
+      fill="#0c1510"
+      opacity="0.22"
+    />
+
+    <g id="active-node-halo">
+      <circle
+        id="pulse-ring-3"
+        cx="680"
+        cy="588"
+        r="156"
+        fill="url(#greenHalo)"
+        opacity="0.34"
+      />
+      <circle
+        id="pulse-ring-2"
+        cx="680"
+        cy="588"
+        r="116"
+        fill="none"
+        stroke="#2dff43"
+        stroke-width="7"
+        stroke-opacity="0.18"
+        filter="url(#ringGlow)"
+      />
+      <circle
+        id="pulse-ring-1"
+        cx="680"
+        cy="588"
+        r="88"
+        fill="none"
+        stroke="#49ff5d"
+        stroke-width="6"
+        stroke-opacity="0.26"
+        filter="url(#ringGlow)"
+      />
+    </g>
+
+    <g id="branch-system" filter="url(#metalShadow)">
+      <path
+        id="branch-path"
+        d="M 352 322 L 352 670 M 352 322 L 545 322 Q 635 322 635 412 L 635 510"
+        fill="none"
+        stroke="url(#metalGradient)"
+        stroke-width="34"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      />
+
+      <circle id="node-top-outer" cx="352" cy="322" r="78" fill="#121416" stroke="url(#metalGradient)" stroke-width="30"/>
+      <circle id="node-top-inner" cx="352" cy="322" r="48" fill="#070809"/>
+
+      <circle id="node-bottom-outer" cx="352" cy="670" r="78" fill="#121416" stroke="url(#metalGradient)" stroke-width="30"/>
+      <circle id="node-bottom-inner" cx="352" cy="670" r="48" fill="#070809"/>
+    </g>
+
+    <g id="active-node" filter="url(#greenGlow)">
+      <circle id="active-node-outer" cx="680" cy="588" r="92" fill="#0b1110" stroke="#8bff8d" stroke-width="12"/>
+      <circle id="active-node-ring" cx="680" cy="588" r="72" fill="none" stroke="#46ff50" stroke-width="11" stroke-opacity="0.92"/>
+      <circle id="active-node-core" cx="680" cy="588" r="59" fill="url(#greenCore)"/>
+      <circle id="active-node-highlight" cx="658" cy="561" r="20" fill="#d9ffd4" opacity="0.34"/>
+    </g>
+  </g>
+</svg>
