@@ -1,6 +1,7 @@
 .DS_Store
 .build/
 dist/
+/submit/
 *.log
 *.log.1
 *.tmp
